@@ -1,0 +1,74 @@
+--Tabela ReservaSalas
+CREATE TABLE ReservaSalas (
+    ReservaID INT PRIMARY KEY,
+    SalaID INT,
+    DataHoraInicio DATE,
+    DATAHoraFim DATE,
+    Responsavel varchar(255)
+);
+
+-- Inserção de todas as coluna.
+INSERT All 
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (1,TO_DATE('01/01/2023 10:00', 'DD/MM/YYYY HH24:MI'), TO_DATE('01/01/2023 11:30', 'DD/MM/YYYY HH24:MI'), 'Maria')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (2,TO_DATE('15/02/2023 14:30', 'DD/MM/YYYY HH24:MI'), TO_DATE('15/02/2023 16:00', 'DD/MM/YYYY HH24:MI'), 'Carlos')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (3,TO_DATE('05/03/2023 09:00', 'DD/MM/YYYY HH24:MI'), TO_DATE('05/03/2023 10:30', 'DD/MM/YYYY HH24:MI'), 'Ana')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (4,TO_DATE('20/04/2023 13:00', 'DD/MM/YYYY HH24:MI'), TO_DATE('20/04/2023 14:30', 'DD/MM/YYYY HH24:MI'), 'Rafael')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (5,TO_DATE('10/05/2023 15:30', 'DD/MM/YYYY HH24:MI'), TO_DATE('10/05/2023 17:00', 'DD/MM/YYYY HH24:MI'), 'Laura')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (6,TO_DATE('12/06/2023 11:00', 'DD/MM/YYYY HH24:MI'), TO_DATE('12/06/2023 12:30', 'DD/MM/YYYY HH24:MI'), 'João')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (7,TO_DATE('03/07/2023 16:30', 'DD/MM/YYYY HH24:MI'), TO_DATE('03/07/2023 18:00', 'DD/MM/YYYY HH24:MI'), 'Pedro')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (8,TO_DATE('18/08/2023 08:00', 'DD/MM/YYYY HH24:MI'), TO_DATE('18/08/2023 09:30', 'DD/MM/YYYY HH24:MI'), 'Camila')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (9,TO_DATE('22/09/2023 12:30', 'DD/MM/YYYY HH24:MI'), TO_DATE('22/09/2023 14:00', 'DD/MM/YYYY HH24:MI'), 'Felipe')
+    INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável) VALUES (10,TO_DATE('15/10/2023 10:30', 'DD/MM/YYYY HH24:MI'), TO_DATE('15/10/2023 12:00', 'DD/MM/YYYY HH24:MI'), 'Beatriz')
+SELECT 1 FROM DUAL;
+
+-- Criação de uma sequência para gerar automaticamente valores para ReservaID
+CREATE SEQUENCE id_sequencia
+  START WITH 11
+  INCREMENT BY 1
+  MAXVALUE 999999999
+  NOCACHE
+  NOCYCLE;
+
+-- Criação do procedimento armazenado InserirReservas
+SET SERVEROUTPUT ON;
+CREATE OR REPLACE PROCEDURE InserirReservas (
+    p_reserva_id number,
+    p_data_inicio date,
+    p_data_fim date,
+    p_responsavel VARCHAR2
+) AS
+    contagem NUMBER;
+begin 
+   SELECT COUNT(*)
+    INTO contagem
+    FROM ReservaSalas
+    WHERE (TRUNC(DATAHORAINICIO)) = TRUNC(p_data_inicio)
+           OR (TRUNC(DATAHORAFIM) = TRUNC(p_data_fim));   
+    
+    if contagem > 0 then
+        DBMS_OUTPUT.PUT_LINE('NÃO ESTÃO DISPONÍVEIS - Contagem: ' || TO_CHAR(contagem));
+    else 
+        INSERT INTO ReservaSalas (ReservaID, DataHoraInicio, DataHoraFim, Responsável)
+        VALUES (id_sequencia.nextval, p_data_inicio, p_data_fim, p_responsavel);     
+    end if;
+end;
+/
+-- Bloco PL/SQL para entrada de dados e execução do procedimento
+SET SERVEROUTPUT ON;
+ACCEPT p_data_inicio DATE FORMAT 'DD-MM-YYYY' PROMPT 'Digite a data de início: '
+ACCEPT p_data_fim DATE FORMAT 'DD-MM-YYYY' PROMPT 'Digite a data de término: '
+ACCEPT p_responsavel CHAR FORMAT 'A100' PROMPT 'Digite o responsável: '
+
+DECLARE 
+    p_reserva_id NUMBER := 0; -- Um valor fixo aqui pra não ser necessário inputar um valor
+    p_data_inicio date := TO_DATE ('&p_data_inicio','DD-MM-YYYY');
+    p_data_fim date := TO_DATE('&p_data_fim','DD-MM-YYYY');
+    p_responsavel varchar2(100) := '&p_responsavel';
+BEGIN
+    InserirReservas (
+        p_reserva_id,
+        p_data_inicio,
+        p_data_fim,
+        p_responsavel
+    );
+END;
